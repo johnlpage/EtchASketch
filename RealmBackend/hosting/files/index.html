@@ -1,0 +1,105 @@
+<html>
+
+<head>
+
+  <script src="https://unpkg.com/realm-web@1.2.0/dist/bundle.iife.js"></script>
+
+  <style>
+    .custom-file-input::-webkit-file-upload-button {
+      visibility: hidden;
+    }
+
+    .custom-file-input::before {
+      content: 'Snap';
+      display: inline-block;
+      background: white;
+      border: 1px solid #999;
+      border-radius: 3px;
+      padding: 5px 8px;
+      outline: none;
+      white-space: nowrap;
+      font-weight: 700;
+      font-size: 60pt;
+    }
+
+    .custom-button {
+      display: inline-block;
+      background: white;
+      border: 1px solid #999;
+      border-radius: 3px;
+      padding: 5px 8px;
+      outline: none;
+      white-space: nowrap;
+      font-weight: 700;
+      font-size: 60pt;
+    }
+
+
+    .preview {
+      width: 80%;
+      left: 10%;
+    }
+  </style>
+
+  <script>
+    function displayImage(input) {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          let img = document.getElementById("myimage")
+          img.src = e.target.result
+          img.width
+        };
+
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+
+
+    //Connect to the App and Authenticate (Anonymous distinct user)
+    function onLoad() {
+      realmApp = new Realm.App({ id: "esketch-mxbre" });
+      if (!realmApp.currentUser) {
+        realmApp.logIn(Realm.Credentials.anonymous()).catch((err) => { console.log(err) });
+      }
+    }
+
+    async function sendImage() {
+      const input = document.getElementById("imageinput")
+
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = async function (e) {
+          await realmApp.currentUser.functions.uploadImage(new Realm.BSON.Binary(e.target.result)).catch(e => console.error(e))
+          alert("Image Uploaded to Queue")
+          watchForPlan(); 
+        };
+      
+        reader.readAsArrayBuffer(input.files[0]);
+      }
+
+    }
+
+  </script>
+</head>
+
+<body onLoad="onLoad();">
+  <div>
+    <center>
+      <input id="imageinput" class="custom-file-input" onchange="displayImage(this);" type="file" name="image"
+        accept="image/*" capture="environment">
+      <p>
+
+      </p>
+      <img class="preview" id="myimage" src="#" alt="your image" />
+      <p></p>
+      <button class="custom-button" onClick="sendImage()">Sketch</button>
+    </center>
+  </div>
+
+</body>
+
+</html>
